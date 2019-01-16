@@ -1,0 +1,50 @@
+version: "3.1"
+services:
+    memcached:
+      image: memcached:alpine
+      container_name: app-memcached
+
+    mongo:
+      container_name: mongo
+      image: mongo:4.0
+      command: --smallfiles
+      ports:
+        - '27017:27017'
+
+    mysql:
+      image: mysql:8.0
+      container_name: app-mysql
+      working_dir: /application
+      volumes:
+        - .:/application
+      environment:
+        - MYSQL_ROOT_PASSWORD=root
+        - MYSQL_DATABASE=app
+        - MYSQL_USER=app
+        - MYSQL_PASSWORD=app
+      ports:
+        - "3307:3306"
+
+    web:
+      image: app-web
+      container_name: app-web
+      hostname: app.local
+      build:
+        context: .
+        dockerfile: docker/web.dockerfile
+        args:
+          - http_proxy
+          - https_proxy
+      working_dir: /app
+      volumes:
+        - .:/app
+        - ./docker/vhost.conf:/etc/apache2/sites-available/000-default.conf
+      depends_on:
+        - mysql
+        - memcached
+      links:
+        - mysql
+        - memcached
+      ports:
+       - "8080:80"
+       - "4433:443"
