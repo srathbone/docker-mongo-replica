@@ -4,12 +4,31 @@ services:
       image: memcached:alpine
       container_name: app-memcached
 
-    mongo:
-      container_name: mongo
+    mongo1:
+      container_name: mongo1
+      hostname: mongo1
       image: mongo:4.0
-      command: --smallfiles
+      command: --smallfiles --replSet "rs0"
+      volumes:
+        - ./docker/mongo/:/docker-entrypoint-initdb.d/
       ports:
         - '27017:27017'
+
+    mongo2:
+      container_name: mongo2
+      hostname: mongo2
+      image: mongo:4.0
+      command: --smallfiles --replSet "rs0"
+      ports:
+        - '27018:27017'
+
+    mongo3:
+      container_name: mongo3
+      hostname: mongo3
+      image: mongo:4.0
+      command: --smallfiles --replSet "rs0"
+      ports:
+        - '27019:27017'
 
     mysql:
       image: mysql:8.0
